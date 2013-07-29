@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="lib/r2d3.js" chartset="utf-8"></script>
+<style>
+
+svg {
+  font: 10px sans-serif;
+}
+
+path, line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+<script>
+var data = [
+     {date:"Jan 2007"},
+     {date:"Dec 2008"}
+     ];
+
+var formatDate = d3.time.format("%b %Y");
+data.forEach(function(d) {
+      d.date = formatDate.parse(d.date);
+});
+
+var margin = {top: 0, right: 20, bottom: 20, left: 20},
+    width = 1000 - margin.left - margin.right,
+    height = 30 - margin.top - margin.bottom;
+
+var xScale = d3.time.scale()
+    .range([0, width]);
+
+var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .ticks(d3.time.months, 1)
+                .tickFormat(d3.time.format('%b'))
+                .orient("bottom");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+var focus = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+xScale.domain(d3.extent(data.map(function(d) { return d.date; })));
+
+focus.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+function redrawAxis(start, end)
+{
+    var range = [new Date(start), new Date(end)];
+    xScale.domain(range);
+
+    focus.select(".x.axis").call(xAxis);
+}
+
+</script>
+Case 1: Completely changing time ranges<br>
+<button onclick='redrawAxis("Jan 1 2007", "Dec 1 2007")'>First 12M</button>
+<button onclick='redrawAxis("Jan 1 2008", "Dec 1 2008")'>Last 12M</button>
+<br><br>
+Case 2: Scale inward then outward with pivot date<br>
+<button onclick='redrawAxis("Jan 1 2007", "Dec 1 2008")'>24M</button>
+<button onclick='redrawAxis("Jan 1 2008", "Dec 1 2008")'>12M</button>
+<button onclick='redrawAxis("Jul 1 2008", "Dec 1 2008")'>6M</button>
+<button onclick='redrawAxis("Oct 1 2008", "Dec 1 2008")'>3M</button>
+<br><br>
+Case 2a: Scale inward then outward without pivot date<br>
+<button onclick='redrawAxis("Jan 1 2008", "Dec 1 2008")'>Outter</button>
+<button onclick='redrawAxis("Mar 1 2008", "Oct 1 2008")'>Inner</button>
+<button onclick='redrawAxis("May 1 2008", "Aug 1 2008")'>Innest</button>
+</body>
